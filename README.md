@@ -152,3 +152,28 @@ CLI
 vault token-create -policy nomad-server -period 72h
 ```
 
+## Enable Nomad / Vault integration
+
+```
+sudo vi /etc/nomad.d/nomad.hcl (enable & set token)
+sudo service nomad restart
+```
+
+## Run the job
+
+```
+nomad run files/redis.nomad
+nomad alloc-status
+nomad node-status NODE_ID
+```
+
+## Validate
+
+ssh to the appropriate client (from node-status above)
+
+```
+sudo docker ps
+sudo docker exec -i -t [CONTAINER_ID] /bin/bash
+echo $VAULT_TOKEN
+wget --header "X-Vault-Token: $VAULT_TOKEN" http://[IP]:8200/v1/redis/secret1
+```
