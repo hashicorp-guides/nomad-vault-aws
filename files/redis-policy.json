@@ -1,1 +1,0 @@
-{"rules": "path \"redis/*\" {capabilities = [\"create\", \"read\", \"update\", \"delete\", \"list\"]}"}
