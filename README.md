@@ -12,17 +12,17 @@ makefile
 3. Admin
   - Deploy admin node into Vault network
   - Setup Vault
+  - Attach Nomad jobs to this server
   - Setup up 'app' table in rds database
   - Configure Token Role
     - write token (for Nomad) to Consul
-  - Block for Nomad_addr? Consul template ~/.profile
+  - start Blocking script for Nomad_addr?
     - Run consul template? re-template ~/.profile
-  - Attach Nomad jobs to this server
 
 4. Nomad
   - setup cluster in Vault network
   - pull token for server config
-  - Write Nomad_addr variable to Consul somehow?
+  - Write nomad_addr variable to Consul somehow?
 
 Usage:
 1. User ssh's into admin node
