@@ -19,7 +19,7 @@ resource "aws_security_group" "rds" {
     protocol    = -1
     from_port   = 0
     to_port     = 0
-    cidr_blocks = ["${data.terraform_remote_state.vault.vpc_id}"]
+    cidr_blocks = ["${data.terraform_remote_state.vault.vpc_cidr}"]
   }
 
   egress {
@@ -32,7 +32,8 @@ resource "aws_security_group" "rds" {
 
 resource "aws_db_subnet_group" "default" {
   name        = "nomad vault subnet group"
-  subnet_ids  = ["${data.terraform_remote_state.vault.subnet_public_ids.0}"]
+  #subnet_ids  = ["${data.terraform_remote_state.vault.subnet_public_ids.0}"]
+  subnet_ids  = ["${data.terraform_remote_state.vault.subnet_public_ids}"]
   description = "Subnet group for RDS"
   tags {
      Name = "DB subnet group"
@@ -40,14 +41,14 @@ resource "aws_db_subnet_group" "default" {
 }
 
 resource "aws_db_instance" "default" {
-  name           = "initial_db"
-  username       = "rootuser"
-  password       = "rootpasswd"
-  engine         = "mysql"
-  engine_version = "5.6.17"
+  name           = "demo_db"
+  username       = "${var.dbuser}"
+  password       = "${var.dbpassword}"
+  engine         = "${var.dbengine}"
+  engine_version = "${var.dbengine_version}"
 
   multi_az                = "false"
-  instance_class          = "db.t2.micro"
+  instance_class          = "${var.dbinstance_size}"
   allocated_storage       = "100"
   storage_type            = "gp2"
   apply_immediately       = "true"

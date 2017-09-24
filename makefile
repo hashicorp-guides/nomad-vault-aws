@@ -9,6 +9,12 @@ init: ## Download all required Terraform modules and plugins
 	@cd admin; terraform init
 	@cd nomad; terraform init
 
+refresh:
+	@cd vault; terraform refresh
+	@cd rds; terraform refresh
+	@cd admin; terraform refresh
+	@cd nomad; terraform refresh
+
 plan_vault:  ## Terraform plan Vault cluster
 	@cd vault; terraform plan
 apply_vault: ## Terraform apply Vault cluster
