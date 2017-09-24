@@ -16,6 +16,11 @@ variable "os_version" {
   description = "Operating System version to use ie 7.3 (for RHEL) or 16.04 (for Ubuntu)"
 }
 
+variable "user" {
+  default     = "ec2-user"
+  description = "user: ec2-user/ubuntu, used by admin provisioner"
+}
+
 # Optional variables for the hashistack-aws repo
 variable "cluster_size" {
   default     = "1"

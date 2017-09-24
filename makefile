@@ -26,7 +26,7 @@ destroy_rds: ## Terraform destroy rds server
 plan_admin: ## Terraform plan admin node
 	@cd admin; terraform plan
 apply_admin: ## Terraform apply admin node
-  @cd admin; terraform apply -state=admin.tfstate
+	@cd admin; terraform apply -state=admin.tfstate
 destroy_admin: ## Terraform destroy admin node
 	@cd admin; terraform destroy -state=admin.tfstate -force
 

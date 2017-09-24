@@ -134,3 +134,6 @@ curl \
     --request POST \
     --data "$${test_role_payload}" \
     http://$${ACTIVE_VAULT_HOST}:8200/v1/auth/aws/role/test
+
+
+#setup vaults mysql database backend

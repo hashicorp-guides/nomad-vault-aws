@@ -43,7 +43,7 @@ module "consul-aws" {
 
 module "nomad-aws" {
   //source              = "github.com/hashicorp-modules/nomad-aws?ref=0.1.0"
-  source              = "../../../modules/nomad-aws"
+  source              = "../../nomad-aws"
   cluster_name        = "nomad-vault-nomad-asg"
   cluster_size        = "${var.cluster_size}"
   consul_server_sg_id = "${module.consul-aws.consul_server_sg_id}"

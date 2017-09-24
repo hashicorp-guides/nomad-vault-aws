@@ -81,9 +81,9 @@ output "environment_name" {
 
 # ssh-keypair-aws outputs
 # Uncomment below to output private key contents
-#output "private_key_data" {
-#  value = "${module.ssh-keypair-aws.private_key_data}"
-#}
+output "private_key_data" {
+  value = "${module.ssh-keypair-aws.private_key_data}"
+}
 
 output "ssh_key_name" {
   value = "${module.ssh-keypair-aws.ssh_key_name}"

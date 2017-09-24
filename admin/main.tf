@@ -56,6 +56,20 @@ resource "aws_instance" "vault_aws_auth_admin" {
     Environment-Name = "${data.terraform_remote_state.vault.environment_name}"
   }
 
+  connection {
+    user = "${var.user}",
+    private_key = "${data.terraform_remote_state.vault.private_key_data}"
+  }
+
+  provisioner "file" {
+    source = "${path.module}/files",
+    destination = "/tmp"
+  }
+  provisioner "file" {
+    source = "${path.module}/jobs",
+    destination = "/tmp"
+  }
+
   user_data = "${data.template_file.admin-vault-setup.rendered}"
 }
 
