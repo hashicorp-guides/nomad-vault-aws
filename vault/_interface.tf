@@ -1,6 +1,6 @@
 # Optional variables
 variable "environment_name_prefix" {
-  default     = "vault-aws-auth"
+  default     = "nomad-vault"
   description = "Environment Name prefix eg my-hashistack-env"
 }
 

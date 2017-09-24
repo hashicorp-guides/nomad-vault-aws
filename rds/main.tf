@@ -19,7 +19,9 @@ resource "aws_security_group" "rds" {
     protocol    = -1
     from_port   = 0
     to_port     = 0
-    cidr_blocks = ["${data.terraform_remote_state.vault.vpc_cidr}"]
+    #cidr_blocks = ["${data.terraform_remote_state.vault.vpc_cidr}"]
+    #TODO change this var in module -> network-aws-simple and vault module
+    cidr_blocks = ["172.19.0.0/20", "172.19.16.0/20"]
   }
 
   egress {
@@ -32,7 +34,6 @@ resource "aws_security_group" "rds" {
 
 resource "aws_db_subnet_group" "default" {
   name        = "nomad vault subnet group"
-  #subnet_ids  = ["${data.terraform_remote_state.vault.subnet_public_ids.0}"]
   subnet_ids  = ["${data.terraform_remote_state.vault.subnet_public_ids}"]
   description = "Subnet group for RDS"
   tags {
@@ -57,14 +58,4 @@ resource "aws_db_instance" "default" {
 
   vpc_security_group_ids    = ["${aws_security_group.rds.id}"]
   db_subnet_group_name      = "${aws_db_subnet_group.default.id}"
-}
-
-provider "mysql" {
-  endpoint = "${aws_db_instance.default.endpoint}"
-  username = "${aws_db_instance.default.username}"
-  password = "${aws_db_instance.default.password}"
-}
-
-resource "mysql_database" "app" {
-  name = "app"
 }

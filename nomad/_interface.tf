@@ -35,7 +35,7 @@ variable "nomad_version" {
 }
 
 variable "instance_type" {
-  default     = "m4.large"
+  default     = "t2.micro"
   description = "AWS instance type to use eg m4.large"
 }
 
@@ -51,32 +51,9 @@ variable "os_version" {
 }
 
 # Outputs
-output "bastion_ips_public" {
-  value = ["${module.network-aws.bastion_ips_public}"]
-}
-
-output "consul_asg_id" {
-  value = "${module.consul-aws.asg_id}"
-}
-
-output "consul_client_sg_id" {
-  value = "${module.consul-aws.consul_client_sg_id}"
-}
-
-output "consul_server_sg_id" {
-  value = "${module.consul-aws.consul_server_sg_id}"
-}
-
-output "nomad_asg_id" {
-  value = "${module.nomad-aws.asg_id}"
-}
-
-output "nomad_server_sg_id" {
-  value = "${module.nomad-aws.nomad_server_sg_id}"
-}
 
 output "ssh_key_name" {
-  value = "${module.ssh-keypair-aws.ssh_key_name}"
+  value = "${data.terraform_remote_state.vault.ssh_key_name}"
 }
 
 output "iam_instance_profile_nomad_server" {
@@ -84,9 +61,5 @@ output "iam_instance_profile_nomad_server" {
 }
 
 output "subnet_public_ids" {
-  value = "${module.network-aws.subnet_public_ids}"
-}
-
-output "random_id_environment_hex" {
-  value = "${random_id.environment_name.hex}"
+  value = "${data.terraform_remote_state.vault.subnet_public_ids}"
 }

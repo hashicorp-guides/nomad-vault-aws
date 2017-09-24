@@ -7,6 +7,7 @@ resource "random_id" "environment_name" {
 module "network-aws-simple" {
   source           = "git@github.com:hashicorp-modules/network-aws-simple.git"
   environment_name = "${random_id.environment_name.hex}"
+  vpc_cidrs_public = ["172.19.0.0/20", "172.19.16.0/20"]
 }
 
 module "hashistack-aws" {

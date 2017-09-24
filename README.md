@@ -8,11 +8,11 @@ makefile
 2. RDS
   - create mysql database
     - deploy into Vault network
-  - mysql provider create 'demo app' table
 
 3. Admin
   - Deploy admin node into Vault network
   - Setup Vault
+  - Setup up 'app' table in rds database
   - Configure Token Role
     - write token (for Nomad) to Consul
   - Block for Nomad_addr? Consul template ~/.profile

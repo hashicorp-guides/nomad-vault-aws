@@ -15,7 +15,7 @@ variable "dbengine" {
 }
 
 variable "dbengine_version" {
-  default = "5.6.17"
+  default = "5.6.27"
   description = "database engine version"
 }
 
