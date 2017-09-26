@@ -1,5 +1,27 @@
+# Work In Progress
+Unfinished project
 
-makefile
+Use the makefile to spin up the infrastructure
+
+```
+terraform init
+terraform apply_vault
+terraform apply_rds
+terraform apply_admin
+terraform apply_nomad
+```
+
+These should work, the TODO's left:
+1. Setup 'app' db table on rds mysql
+2. Configure Vault with Token Role
+  a. write token to consul.
+  b. Have Nomad pull this token from consul(env var)
+  c. start Nomad
+3. set NOMAD_ADDR on the admin (pull from consul) or use consul template
+
+
+
+# Implementation notes
 
 1. Vault
   - deploy vault (hashistack)
@@ -9,6 +31,7 @@ makefile
   - create mysql database
     - deploy into Vault network
 
+TODO
 3. Admin
   - Deploy admin node into Vault network
   - Setup Vault
@@ -26,7 +49,7 @@ makefile
 
 Usage:
 1. User ssh's into admin node
-2. Runs script that sets up NOMAD_ADDR variable (use Consul?)
+2. Runs script that sets up NOMAD_ADDR or have script watch Consul for nomad service
 3. Launches jobs
 
 Features to show off:
@@ -34,3 +57,8 @@ Features to show off:
 - Show nginx/lb using Vault for PKI
 - Nomad blue/green/canary deployments
 - Consul template example to webserver/library
+- Fabio
+
+Next Steps:
+- add Multi region Vault
+- add multi region Nomad

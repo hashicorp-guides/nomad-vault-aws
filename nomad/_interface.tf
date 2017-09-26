@@ -4,6 +4,11 @@ variable "environment_name_prefix" {
   description = "Environment Name prefix eg my-nomad-env"
 }
 
+variable "vault_enabled" {
+  default     = "true"
+  description = "enable Nomad Vault integration"
+}
+
 variable "cluster_size" {
   default     = "3"
   description = "Number of instances to launch in the cluster"

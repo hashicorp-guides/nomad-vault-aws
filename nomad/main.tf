@@ -26,4 +26,5 @@ module "nomad-aws" {
   ssh_key_name        = "${data.terraform_remote_state.vault.ssh_key_name}"
   subnet_ids          = "${data.terraform_remote_state.vault.subnet_public_ids}"
   vpc_id              = "${data.terraform_remote_state.vault.vpc_id}"
+  vault_enabled       = "${var.vault_enabled}"
 }
