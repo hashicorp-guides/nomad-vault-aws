@@ -14,9 +14,9 @@ terraform apply_nomad
 These should work, the TODO's left:
 1. Setup 'app' db table on rds mysql
 2. Configure Vault with Token Role
-  a. write token to consul.
-  b. Have Nomad pull this token from consul(env var)
-  c. start Nomad
+  - write token to consul.
+  - Have Nomad pull this token from consul(env var)
+  - start Nomad
 3. set NOMAD_ADDR on the admin (pull from consul) or use consul template
 
 
@@ -31,7 +31,6 @@ These should work, the TODO's left:
   - create mysql database
     - deploy into Vault network
 
-TODO
 3. Admin
   - Deploy admin node into Vault network
   - Setup Vault
