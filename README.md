@@ -10,8 +10,8 @@ terraform apply_rds
 terraform apply_admin
 terraform apply_nomad
 
+# ssh into the admin node
 ssh ec2-user@ec2-13-56-231-116.us-west-1.compute.amazonaws.com -i vault/nomad-vault-84601057.pem
-
 
 # Now give it a minute or two for Nomad to join
 [ec2-user@hashistack-i-01b913f1d6d78fea3 ~]$ consul members
