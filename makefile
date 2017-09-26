@@ -44,7 +44,7 @@ destroy_nomad: ## Terraform destroy nomad cluster
 	@cd nomad; terraform destroy -state=nomad.tfstate -force
 
 destroy_all: ## Destroy all environments
-  @cd rds;   terraform destroy -state=rds.tfstate -force
+	@cd rds;   terraform destroy -state=rds.tfstate -force
 	@cd admin; terraform destroy -state=admin.tfstate -force
 	@cd nomad; terraform destroy -state=nomad.tfstate -force
 	@cd vault; terraform destroy -state=vault.tfstate -force
