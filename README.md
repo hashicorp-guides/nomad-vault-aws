@@ -31,7 +31,7 @@ Above ^ should work, the TODO's left:
 2. Configure Vault with Token Role
   - write token to consul.
   - Have Nomad pull this token from consul(env var)
-  - start Nomad
+  - restart Nomad
 3. set NOMAD_ADDR on the admin (pull from consul) or use consul template
 4. register mysql/rds as external service in Consul
 
@@ -74,4 +74,6 @@ Features to show off:
 
 Next Steps:
 - add Multi region Vault
+  - vault2/
 - add multi region Nomad
+  - nomad2/
