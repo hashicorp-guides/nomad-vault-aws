@@ -1,4 +1,7 @@
 #!/bin/bash
+set -x
+set -v
+set -e
 
 instance_id="$(curl -s http://169.254.169.254/latest/meta-data/instance-id)"
 local_ipv4="$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)"
@@ -112,6 +115,7 @@ curl \
     http://$${ACTIVE_VAULT_HOST}:8200/v1/auth/aws/config/client
 
 
+
 # Configure AWS auth role
 test_role_payload=$(cat <<EOF
 {
@@ -136,4 +140,70 @@ curl \
     http://$${ACTIVE_VAULT_HOST}:8200/v1/auth/aws/role/test
 
 
-#setup vaults mysql database backend
+# Create database table
+database_setup() {
+  sudo yum install -y mysql
+  mysql -h ${db_address} -u ${db_user} -p${db_password} -e 'create database app;'
+}
+
+# Setup Vault MySQL database backend
+vault_database_setup() {
+  database_mount_payload=$(cat <<EOF
+  {
+    "type": "database"
+  }
+  EOF
+  )
+
+  curl \
+      --header "X-Vault-Token: $${VAULT_TOKEN}" \
+      --request POST \
+      --data '$${database_mount_payload}' \
+      http://$${ACTIVE_VAULT_HOST}/v1/sys/mounts/database
+
+
+  mysql_config_payload=$(cat <<EOF
+  {
+    "plugin_name": "mysql-database-plugin",
+    "allowed_roles": "readonly",
+    "connection_url": "${db_user}:${db_password}@tcp(${db_address}:3306)/",
+    "max_open_connections": 5,
+    "max_connection_lifetime": "5s",
+  }
+  EOF
+  )
+
+  curl \
+      --silent \
+      --header "X-Vault-Token: $${VAULT_TOKEN}" \
+      --request POST \
+      --data "$${mysql_config_payload}" \
+      http://$${ACTIVE_VAULT_HOST}:8200/v1/database/config/mysql
+}
+
+# Setup Nomad Token Role
+nomad_token_role_setup() {
+  curl -X "PUT" "http://$${ACTIVE_VAULT_HOST}:8200/v1/sys/policy/nomad-server" \
+       -H "X-Vault-Token: $${VAULT_TOKEN}" \
+       -H "Content-Type: text/plain; charset=utf-8" \
+       --data-binary "@files/nomad-server-policy.json"
+
+  curl -X "PUT" "http://$${ACTIVE_VAULT_HOST}:8200/v1/auth/token/roles/nomad-cluster" \
+       -H "X-Vault-Token: $${ACTIVE_VAULT_HOST}" \
+       -H "Content-Type: text/plain; charset=utf-8" \
+       -d '{"disallowed_policies": "nomad-server", "explicit_max_ttl": 0, "name": "nomad-cluster", "orphan": false, "period": 259200, "renewable": true}'
+
+  curl -X "POST" "http://$${ACTIVE_VAULT_HOST}:8200/v1/auth/token/create/nomad-cluster" \
+       -H "X-Vault-Token: $${ACTIVE_VAULT_HOST}" \
+       -H "Content-Type: text/plain; charset=utf-8" \
+       -d '{"policy": "nomad-server", "period": "72h"}'
+
+  # Write Nomad token to Consul
+  #export NOMAD_TOKEN=$(vault token-create -policy nomad-server | grep 'token ' | awk '{print $2}')
+  #curl -fX PUT 127.0.0.1:8500/v1/kv/service/vault/nomad-token \
+  #    -d $NOMAD_TOKEN
+
+
+}
+
+# Wait for Nomad to Restart, set NOMAD_ADDR?

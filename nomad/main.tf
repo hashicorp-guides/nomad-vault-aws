@@ -10,8 +10,8 @@ data "terraform_remote_state" "vault" {
 }
 
 module "nomad-aws" {
-  source              = "github.com/hashicorp-modules/nomad-aws?ref=0.1.0"
-  //source              = "../../nomad-aws"
+  //source              = "github.com/hashicorp-modules/nomad-aws?ref=0.1.0"
+  source              = "../../nomad-aws"
   cluster_name        = "${data.terraform_remote_state.vault.environment_name}"
   cluster_size        = "${var.cluster_size}"
   consul_server_sg_id = "${data.terraform_remote_state.vault.consul_client_sg_id}"

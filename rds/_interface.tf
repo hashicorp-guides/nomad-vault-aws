@@ -24,7 +24,12 @@ variable "dbinstance_size" {
 }
 
 #Outputs
-
+output "db_user" {
+  value = "${var.dbuser}"
+}
+output "db_password" {
+  value = "${var.dbpassword}"
+}
 output "db_endpoint" {
   value = "${aws_db_instance.default.endpoint}"
 }

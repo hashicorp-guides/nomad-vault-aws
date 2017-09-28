@@ -4,9 +4,14 @@ terraform {
 
 data "terraform_remote_state" "vault" {
   backend = "local"
-
   config {
     path = "${path.module}/../vault/vault.tfstate"
+  }
+}
+data "terraform_remote_state" "db" {
+  backend = "local"
+  config {
+    path = "${path.module}/../rds/rds.tfstate"
   }
 }
 
@@ -84,6 +89,9 @@ data "template_file" "admin-vault-setup" {
     region           = "${var.region}"
     vpc_id           = "${data.terraform_remote_state.vault.vpc_id}"
     subnet_id        = "${data.terraform_remote_state.vault.subnet_public_ids.0}"
+    db_user          = "${data.terraform_remote_state.db.db_user}"
+    db_password      = "${data.terraform_remote_state.db.db_password}"
+    db_address       = "${data.terraform_remote_state.db.db_address}"
   }
 }
 

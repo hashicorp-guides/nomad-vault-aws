@@ -49,6 +49,12 @@ destroy_all: ## Destroy all environments
 	@cd nomad; terraform destroy -state=nomad.tfstate -force
 	@cd vault; terraform destroy -state=vault.tfstate -force
 
+apply_all: ## Destroy all environments
+	@cd vault; terraform apply -state=vault.tfstate -force
+	@cd rds;   terraform apply -state=rds.tfstate -force
+	@cd admin; terraform apply -state=admin.tfstate -force
+	@cd nomad; terraform apply -state=nomad.tfstate -force
+
 clean: ## cleaning up all artifacts
 	@echo "Cleaning up"
 	@rm -rf .terraform/ \

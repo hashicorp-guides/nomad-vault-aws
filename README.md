@@ -49,9 +49,12 @@ Above ^ should work, the TODO's left:
   - Deploy admin node into Vault network
   - Setup Vault
   - Attach Nomad jobs to this server
+
   - Setup up 'app' table in rds database
+
   - Configure Token Role
     - write token (for Nomad) to Consul
+
   - start Blocking script for Nomad_addr?
     - Run consul template? re-template ~/.profile
 
@@ -77,3 +80,11 @@ Next Steps:
   - vault2/
 - add multi region Nomad
   - nomad2/
+
+
+# Have Nomad instance spin on nomad-token in consul, if there then restart Nomad with token
+#   would need to add Vault to config of nomad-aws
+
+# Have Admin write nomad token to consul then spin, waiting for active Nomad
+#   Once nomad.consul active, then export NOMAD_ADDR
+# Or re-template with the serivice using consul template
