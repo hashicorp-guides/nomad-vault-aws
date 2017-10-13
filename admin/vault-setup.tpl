@@ -158,7 +158,6 @@ database_setup() {
 
 # Setup Vault MySQL database backend
 vault_database_setup() {
-
 ACTIVE_VAULT_HOST=$(curl -s http://127.0.0.1:8500/v1/catalog/service/vault?tags=active | jq -r '.[0].Address')
 VAULT_TOKEN=$(cat /tmp/root_token)
 database_mount_payload=$(cat <<EOF
@@ -200,39 +199,51 @@ mysql_role_payload=$(cat <<EOF
 }
 EOF
 )
-
 curl \
   --silent \
   --header "X-Vault-Token: $${VAULT_TOKEN}" \
   --request POST \
   --data "$${mysql_role_payload}" \
   http://$${ACTIVE_VAULT_HOST}:8200/v1/database/roles/app
-  
+
 }
 
 
 # Setup Nomad Token Role
 nomad_token_role_setup() {
+nomad_server_policy=$(cat <<EOF
+{"rules": "path \"auth/token/create/nomad-cluster\" {capabilities = [\"update\"]} path \"auth/token/roles/nomad-cluster\" {capabilities = [\"read\"]}    path \"database/creds/app\" {capabilities = [\"read\",\"list\"]} path \"secret/app\" {capabilities = [\"read\",\"list\"]}  path \"auth/token/lookup\" {capabilities = [\"update\"]} path \"auth/token/revoke-accessor\" {capabilities = [\"update\"]} path \"/sys/capabilities-self\" {capabilities = [\"update\"]} path \"auth/token/renew-self\" {capabilities = [\"update\"]}"}
+EOF
+)
 
-curl -X "PUT" "http://$${ACTIVE_VAULT_HOST}:8200/v1/sys/policy/nomad-server" \
-     -H "X-Vault-Token: $${VAULT_TOKEN}" \
-     -H "Content-Type: text/plain; charset=utf-8" \
-     --data-binary "@files/nomad-server-policy.json"
+curl \
+  --header "X-Vault-Token: $${VAULT_TOKEN}" \
+  --request PUT \
+  --data "$${nomad_server_policy}" \
+  http://$${ACTIVE_VAULT_HOST}:8200/v1/sys/policy/nomad-server
 
-curl -X "PUT" "http://$${ACTIVE_VAULT_HOST}:8200/v1/auth/token/roles/nomad-cluster" \
-     -H "X-Vault-Token: $${ACTIVE_VAULT_HOST}" \
-     -H "Content-Type: text/plain; charset=utf-8" \
-     -d '{"disallowed_policies": "nomad-server", "explicit_max_ttl": 0, "name": "nomad-cluster", "orphan": false, "period": 259200, "renewable": true}'
+curl \
+  --header "X-Vault-Token: $${VAULT_TOKEN}" \
+  --request PUT \
+  --data '{"disallowed_policies": "nomad-server", "explicit_max_ttl": 0, "name": "nomad-cluster", "orphan": false, "period": 259200, "renewable": true}' \
+  http://$${ACTIVE_VAULT_HOST}:8200/v1/auth/token/roles/nomad-cluster
 
-curl -X "POST" "http://$${ACTIVE_VAULT_HOST}:8200/v1/auth/token/create/nomad-cluster" \
-     -H "X-Vault-Token: $${ACTIVE_VAULT_HOST}" \
-     -H "Content-Type: text/plain; charset=utf-8" \
-     -d '{"policy": "nomad-server", "period": "72h"}'
+curl \
+  --header "X-Vault-Token: $${VAULT_TOKEN}" \
+  --request "POST" \
+  --data '{"policy": "nomad-server", "period": "72h"}' \
+  http://$${ACTIVE_VAULT_HOST}:8200/v1/auth/token/create/nomad-cluster | tee \
+  >(jq -r .auth.client_token > /tmp/nomad_token)
 
-# Write Nomad token to Consul
-export NOMAD_TOKEN=$(vault token-create -policy nomad-server | grep 'token ' | awk '{print $2}')
-curl -X PUT 127.0.0.1:8500/v1/kv/service/vault/nomad-token \
-     -d $NOMAD_TOKEN
+NOMAD_TOKEN=$(cat /tmp/nomad_token)
+curl \
+  --silent \
+  --request PUT \
+  --data "$${NOMAD_TOKEN}" \
+  http://127.0.0.1:8500/v1/kv/service/vault/nomad-token
+
 }
 
 # Wait for Nomad to Restart, set NOMAD_ADDR?
+# Consul template bashrc .profile
+#NOMAD_HOST=$(curl -s http://127.0.0.1:8500/v1/catalog/service/nomad-server | jq -r .[0].Address)
