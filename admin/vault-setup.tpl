@@ -3,6 +3,8 @@ set -x
 set -v
 set -e
 
+sudo echo "hi" > /tmp/test.txt
+
 instance_id="$(curl -s http://169.254.169.254/latest/meta-data/instance-id)"
 local_ipv4="$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)"
 new_hostname="hashistack-$${instance_id}"
@@ -41,6 +43,8 @@ systemctl start consul
 # remove this when dan fixes the images
 sleep 120
 
+sudo echo "hi2" > /tmp/test.txt
+
 # init Vault
 VAULT_HOST=$(curl -s http://127.0.0.1:8500/v1/catalog/service/vault | jq -r '.[0].Address')
 curl \
@@ -58,7 +62,7 @@ for v in $(curl -s http://127.0.0.1:8500/v1/catalog/service/vault | jq -r '.[].A
        --silent \
        --request PUT \
        --data '{"key": "'"$$key"'"}' \
-       http://$${v}:8200/v1/sys/unseal
+       http://$${VAULT_HOST}:8200/v1/sys/unseal
 done
 
 # wait to ensure leader election complete for an active Vault node
@@ -75,6 +79,14 @@ curl \
     --request POST \
     --data '{"secret":"SUPER_SECRET_PASSWORD"}' \
     http://$${ACTIVE_VAULT_HOST}:8200/v1/secret/foo
+
+#write vault token to Consul for Nomad (DEMO USE ONLY)
+ROOT_TOKEN=$(cat /tmp/root_token)
+curl \
+    --silent \
+    --request PUT \
+    --data "$${ROOT_TOKEN}" \
+    http://127.0.0.1:8500/v1/kv/service/vault/root-token
 
 # write a policy
 
@@ -113,8 +125,6 @@ curl \
     --request POST \
     --data '{ "access_key": "${aws_access_key}", "secret_key": "${aws_secret_key}"}' \
     http://$${ACTIVE_VAULT_HOST}:8200/v1/auth/aws/config/client
-
-
 
 # Configure AWS auth role
 test_role_payload=$(cat <<EOF

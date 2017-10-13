@@ -29,17 +29,17 @@ variable "cluster_size" {
 
 variable "consul_version" {
   default     = "0.9.2"
-  description = "Consul version to use ie 0.8.4"
+  description = "Consul version to use ie 0.9.3"
 }
 
 variable "nomad_version" {
-  default     = "0.6.2"
-  description = "Nomad version to use ie 0.6.0"
+  default     = "0.6.3"
+  description = "Nomad version to use ie 0.6.3"
 }
 
 variable "vault_version" {
-  default     = "0.8.1"
-  description = "Vault version to use ie 0.7.1"
+  default     = "0.8.3"
+  description = "Vault version to use ie 0.8.3"
 }
 
 variable "region" {
@@ -51,4 +51,8 @@ variable "region" {
 
 output "ssh_info" {
   value = "${data.template_file.format_ssh.rendered}"
+}
+
+output "admin_ip" {
+  value = "${aws_instance.vault_aws_auth_admin.public_dns}"
 }

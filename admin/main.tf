@@ -16,7 +16,7 @@ data "terraform_remote_state" "db" {
 }
 
 module "images-aws" {
-  source         = "git@github.com:hashicorp-modules/images-aws.git?ref=2017-07-03"
+  source         = "git@github.com:hashicorp-modules/images-aws.git"
   nomad_version  = "${var.nomad_version}"
   vault_version  = "${var.vault_version}"
   consul_version = "${var.consul_version}"
@@ -53,26 +53,12 @@ resource "aws_instance" "vault_aws_auth_admin" {
     "${data.terraform_remote_state.vault.hashistack_server_sg_id}",
   ]
 
-  associate_public_ip_address = false
+  associate_public_ip_address = true
   ebs_optimized               = false
   iam_instance_profile        = "${aws_iam_instance_profile.vault_aws_auth_admin.id}"
 
   tags {
     Environment-Name = "${data.terraform_remote_state.vault.environment_name}"
-  }
-
-  connection {
-    user = "${var.user}",
-    private_key = "${data.terraform_remote_state.vault.private_key_data}"
-  }
-
-  provisioner "file" {
-    source = "${path.module}/files",
-    destination = "/tmp"
-  }
-  provisioner "file" {
-    source = "${path.module}/jobs",
-    destination = "/tmp"
   }
 
   user_data = "${data.template_file.admin-vault-setup.rendered}"

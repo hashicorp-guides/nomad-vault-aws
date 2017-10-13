@@ -82,9 +82,14 @@ Next Steps:
   - nomad2/
 
 
-# Have Nomad instance spin on nomad-token in consul, if there then restart Nomad with token
-#   would need to add Vault to config of nomad-aws
+Have Nomad instance spin on nomad-token in consul, if there then restart Nomad with token
+  would need to add Vault to config of nomad-aws
 
-# Have Admin write nomad token to consul then spin, waiting for active Nomad
-#   Once nomad.consul active, then export NOMAD_ADDR
-# Or re-template with the serivice using consul template
+Have Admin write nomad token to consul then spin, waiting for active Nomad
+   Once nomad.consul active, then export NOMAD_ADDR
+ Or re-template with the serivice using consul template
+
+# Next Steps
+1. Make sure current admin commands work to setup database, and create Nomad token role, write to consul
+2. Add Vault config to nomad-aws, nomad waits for token
+3. add logic to admin to wait, admin waits for nomad

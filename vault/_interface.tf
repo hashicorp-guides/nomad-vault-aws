@@ -28,12 +28,12 @@ variable "consul_version" {
 }
 
 variable "nomad_version" {
-  default     = "0.6.2"
+  default     = "0.6.3"
   description = "Nomad version to use ie 0.6.0"
 }
 
 variable "vault_version" {
-  default     = "0.8.1"
+  default     = "0.8.3"
   description = "Vault version to use ie 0.7.1"
 }
 

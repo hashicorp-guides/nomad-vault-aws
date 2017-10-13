@@ -1,70 +1,101 @@
-# Optional variables
-variable "environment_name_prefix" {
-  default     = "nomad"
-  description = "Environment Name prefix eg my-nomad-env"
+# Required variables
+variable "cluster_name" {
+  description = "Auto Scaling Group Cluster Name"
+  default = "nomad-vault"
 }
 
-variable "vault_enabled" {
-  default     = "true"
-  description = "enable Nomad Vault integration"
+/*
+variable "consul_server_sg_id" {
+  description = "Consul Server Security Group ID"
 }
+*/
 
-variable "cluster_size" {
-  default     = "3"
-  description = "Number of instances to launch in the cluster"
-}
-
-variable "consul_as_server" {
-  default     = "false"
-  description = "Run the consul agent in server mode: true/false"
-}
-
-variable "consul_version" {
-  default     = "0.8.4"
-  description = "Consul version to use eg 0.8.4"
-}
-
-variable "nomad_as_client" {
-  default     = "true"
-  description = "Run Nomad in client mode: true/false"
-}
-
-variable "nomad_as_server" {
-  default     = "true"
-  description = "Run Nomad in server mode: true/false"
+variable "environment_name" {
+  description = "Environment Name (tagged to all instances)"
+  default = "nomad-vault"
 }
 
 variable "nomad_version" {
-  default     = "0.6.0"
-  description = "Nomad version to use eg 0.6.0"
-}
-
-variable "instance_type" {
-  default     = "t2.micro"
-  description = "AWS instance type to use eg m4.large"
+  description = "Nomad version to use eg 0.6.0 or 0.6.0+ent"
+  default = "0.6.3"
 }
 
 variable "os" {
   # case sensitive for AMI lookup
-  default     = "Ubuntu"
   description = "Operating System to use ie RHEL or Ubuntu"
+  default = "Ubuntu"
 }
 
 variable "os_version" {
-  default     = "16.04"
   description = "Operating System version to use ie 7.3 (for RHEL) or 16.04 (for Ubuntu)"
+  default = "16.04"
+}
+
+/*
+variable "ssh_key_name" {
+  description = "Pre-existing AWS key name you will use to access the instance(s)"
+}
+
+variable "subnet_ids" {
+  type        = "list"
+  description = "Pre-existing Subnet ID(s) to use"
+}
+
+variable "vpc_id" {
+  description = "Pre-existing VPC ID to use"
+}
+*/
+
+variable "vpc_cidr_block" {
+  description = "Pre-existing VPC cidr block to use"
+  default     = ""
+}
+
+# Optional variables
+variable "cluster_size" {
+  default     = "3"
+  description = "Number of instances to launch in the cluster eg 3"
+}
+
+variable "consul_as_server" {
+  default     = "true"
+  description = "Run the consul agent in server mode: true/false"
+}
+
+variable "environment" {
+  default     = "production"
+  description = "Environment eg development, stage or production"
+}
+
+variable "instance_type" {
+  default     = "m4.large"
+  description = "AWS instance type to use eg m4.large"
+}
+
+variable "nomad_as_client" {
+  default     = "true"
+  description = "Run the nomad agent in client mode: true/false"
+}
+
+variable "nomad_as_server" {
+  default     = "true"
+  description = "Run the nomad agent in server mode: true/false"
+}
+
+variable "nomad_use_consul" {
+  default     = "true"
+  description = "Use nomad with consul: true/false"
 }
 
 # Outputs
+output "asg_id" {
+  value = "${aws_autoscaling_group.nomad_server.id}"
+}
 
-output "ssh_key_name" {
-  value = "${data.terraform_remote_state.vault.ssh_key_name}"
+output "nomad_server_sg_id" {
+  value = "${aws_security_group.nomad_server.id}"
 }
 
 output "iam_instance_profile_nomad_server" {
-  value = "${module.nomad-aws.iam_instance_profile_nomad_server}"
-}
-
-output "subnet_public_ids" {
-  value = "${data.terraform_remote_state.vault.subnet_public_ids}"
+  value = "${aws_iam_instance_profile.nomad_server.id}"
 }
