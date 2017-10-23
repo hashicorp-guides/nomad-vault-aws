@@ -40,6 +40,14 @@ resource "aws_security_group" "nomad_server" {
     self      = true
   }
 
+  # Demo App
+  ingress {
+    from_port = 8080
+    to_port   = 8080
+    protocol  = "tcp"
+    self      = true
+  }
+
   # TCP All outbound traffic
   egress {
     from_port   = 0

@@ -26,7 +26,7 @@ job "app" {
       }
 
       artifact {
-        source = "https://s3.amazonaws.com/ak-bucket-1/app"
+        source = "https://s3-us-west-1.amazonaws.com/aklaas/app"
       }
 
       resources {

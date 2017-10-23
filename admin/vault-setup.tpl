@@ -210,9 +210,10 @@ curl \
 
 
 # Setup Nomad Token Role
-nomad_token_role_setup() {
+nomad_token_role_setup(){
+
 nomad_server_policy=$(cat <<EOF
-{"rules": "path \"auth/token/create/nomad-cluster\" {capabilities = [\"update\"]} path \"auth/token/roles/nomad-cluster\" {capabilities = [\"read\"]}    path \"database/creds/app\" {capabilities = [\"read\",\"list\"]} path \"secret/app\" {capabilities = [\"read\",\"list\"]}  path \"auth/token/lookup\" {capabilities = [\"update\"]} path \"auth/token/revoke-accessor\" {capabilities = [\"update\"]} path \"/sys/capabilities-self\" {capabilities = [\"update\"]} path \"auth/token/renew-self\" {capabilities = [\"update\"]}"}
+{"rules": "path \"auth/token/create/nomad-cluster\" {capabilities = [\"update\"]} path \"auth/token/roles/nomad-cluster\" {capabilities = [\"read\"]} path \"database/creds/app\" {capabilities = [\"read\",\"list\"]} path \"secret/app\" {capabilities = [\"read\",\"list\"]}  path \"auth/token/lookup\" {capabilities = [\"update\"]} path \"auth/token/revoke-accessor\" {capabilities = [\"update\"]} path \"/sys/capabilities-self\" {capabilities = [\"update\"]} path \"auth/token/renew-self\" {capabilities = [\"update\"]}"}
 EOF
 )
 
@@ -244,6 +245,174 @@ curl \
 
 }
 
+database_setup
+vault_database_setup
+nomad_token_role_setup
+
+#register external database as mysql.service.consul
+curl -X PUT \
+  -d '{"Datacenter": "dc1", "Node": "mysql", "Address": "${db_address}}", "Service": {"Service": "rds-mysql", "Port": 3306 }}' \
+  http://127.0.0.1:8500/v1/catalog/register
+
+#Attach Nomad job files
+sudo echo 'job "app" {
+  datacenters = ["dc1"]
+  type = "service"
+
+  update {
+    stagger = "5s"
+    max_parallel = 1
+  }
+
+  group "app" {
+    count = 3
+
+    task "app" {
+      driver = "exec"
+      config {
+        command = "app"
+      }
+
+      env {
+        VAULT_ADDR = "http://vault.service.consul:8200"
+        APP_DB_HOST = "10.103.0.5:3306"
+      }
+
+      vault {
+        policies = ["nomad-server"]
+      }
+
+      artifact {
+        source = "https://s3-us-west-1.amazonaws.com/aklaas/app"
+      }
+
+      resources {
+        cpu = 500
+        memory = 64
+        network {
+          mbits = 1
+          port "http" {}
+        }
+      }
+
+      service {
+        name = "app"
+        tags = ["urlprefix-app.com/"]
+        port = "http"
+        check {
+          type = "http"
+          name = "healthz"
+          interval = "15s"
+          timeout = "5s"
+          path = "/healthz"
+        }
+      }
+    }
+  }
+}' | tee -a /tmp/app.nomad
+sudo chmod 777 /tmp/app.nomad
+
+echo 'job "fabio" {
+  datacenters = ["dc1"]
+  type = "system"
+  update {
+    stagger = "5s"
+    max_parallel = 1
+  }
+
+  group "fabio" {
+    task "fabio" {
+      driver = "exec"
+      config {
+        command = "fabio"
+      }
+
+      artifact {
+        source = "https://s3.amazonaws.com/ak-bucket-1/fabio"
+      }
+
+      resources {
+        cpu = 500
+        memory = 64
+        network {
+          mbits = 1
+
+          port "http" {
+            static = 9999
+          }
+          port "ui" {
+            static = 9998
+          }
+        }
+      }
+    }
+  }
+}' | tee -a /tmp/fabio.nomad
+sudo chmod 777 /tmp/fabio.nomad
+
+sudo echo '
+job "goapp" {
+  datacenters = ["dc1"]
+  type = "service"
+  update {
+    max_parallel = 1
+    min_healthy_time = "10s"
+    healthy_deadline = "3m"
+    auto_revert = false
+    canary = 0
+  }
+  group "goapp" {
+    count = 3
+    restart {
+      # The number of attempts to run the job within the specified interval.
+      attempts = 10
+      interval = "5m"
+      # The "delay" parameter specifies the duration to wait before restarting
+      # a task after it has failed.
+      delay = "25s"
+      mode = "delay"
+    }
+    ephemeral_disk {
+      size = 300
+    }
+    task "goapp" {
+      # The "driver" parameter specifies the task driver that should be used to
+      # run the task.
+      driver = "docker"
+      config {
+        image = "aklaas2/test-app"
+        port_map {
+          http = 8080
+        }
+      }
+      resources {
+        cpu    = 500 # 500 MHz
+        memory = 256 # 256MB
+        network {
+          mbits = 10
+          port "http" {
+		          static=8080
+	        }
+        }
+      }
+      service {
+        name = "goapp"
+        tags = [ "urlprefix-goapp/"]
+        port = "http"
+        check {
+          name     = "alive"
+          type     = "tcp"
+          interval = "10s"
+          timeout  = "2s"
+        }
+      }
+    }
+  }
+}
+' | tee -a /tmp/goapp.nomad
+sudo chmod 777 /tmp/goapp.nomad
+
+
 # Wait for Nomad to Restart, set NOMAD_ADDR?
 # Consul template bashrc .profile
-#NOMAD_HOST=$(curl -s http://127.0.0.1:8500/v1/catalog/service/nomad-server | jq -r .[0].Address)
+#NOMAD_HOST=$(curl -s http://127.0.0.1:8500/v1/catalog/service/vault | jq -r '.[0].Address')

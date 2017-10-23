@@ -1,8 +1,13 @@
-# Optional variables
-variable "environment_name_prefix" {
-  default     = "nomad-vault"
-  description = "Environment Name prefix eg my-hashistack-env"
+# Required variables
+/*
+variable "cluster_name" {
+  description = "Auto Scaling Group Cluster Name"
 }
+
+variable "environment_name" {
+  description = "Environment Name (tagged to all instances)"
+}
+*/
 
 # Required variables for hashistack-aws config
 variable "os" {
@@ -16,10 +21,9 @@ variable "os_version" {
   description = "Operating System version to use ie 7.3 (for RHEL) or 16.04 (for Ubuntu)"
 }
 
-# Optional variables for the hashistack-aws repo
-variable "cluster_size" {
-  default     = "3"
-  description = "Number of instances to launch in the cluster"
+variable "region" {
+  default     = "us-west-1"
+  description = "Region to deploy consul cluster ie us-west-1"
 }
 
 variable "consul_version" {
@@ -37,14 +41,40 @@ variable "vault_version" {
   description = "Vault version to use ie 0.7.1"
 }
 
+/*
+variable "ssh_key_name" {
+  description = "Pre-existing AWS key name you will use to access the instance(s)"
+}
+
+variable "subnet_ids" {
+  type        = "list"
+  description = "Pre-existing Subnet ID(s) to use"
+}
+
+variable "vpc_id" {
+  description = "Pre-existing VPC ID to use"
+}
+*/
+
+# Optional variables
+variable "environment_name_prefix" {
+  default     = "nomad-vault"
+  description = "Environment Name prefix eg my-hashistack-env"
+}
+
+variable "cluster_size" {
+  default     = "3"
+  description = "Number of instances to launch in the cluster"
+}
+
+variable "environment" {
+  default     = "production"
+  description = "Environment eg development, stage or production"
+}
+
 variable "instance_type" {
   default     = "m4.large"
   description = "AWS instance type to use eg m4.large"
-}
-
-variable "region" {
-  default     = "us-west-1"
-  description = "Region to deploy consul cluster ie us-west-1"
 }
 
 ## Outputs
@@ -64,15 +94,15 @@ output "security_group_egress_id" {
 
 # hashistack-aws outputs
 output "hashistack_autoscaling_group_id" {
-  value = "${module.hashistack-aws.asg_id}"
+  value = "${aws_autoscaling_group.hashistack_server.id}"
 }
 
 output "consul_client_sg_id" {
-  value = "${module.hashistack-aws.consul_client_sg_id}"
+  value = "${aws_security_group.consul_client.id}"
 }
 
 output "hashistack_server_sg_id" {
-  value = "${module.hashistack-aws.hashistack_server_sg_id}"
+  value = "${aws_security_group.hashistack_server.id}"
 }
 
 output "environment_name" {
